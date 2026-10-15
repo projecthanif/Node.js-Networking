@@ -1,5 +1,5 @@
 // Fig 1 — EventEmitter as a bell board.
-// node 01-events/figure/build.mjs [--light]  → writes event-board(.light).html next to this file.
+// node 01-events/figure/build.mjs [--light]  → writes event-board(-light).html and event-video(-light).html next to this file.
 import { readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,6 +8,7 @@ import { homedir } from "node:os";
 const SKILL = join(homedir(), ".claude/skills/anatomy");
 const k = await import(join(SKILL, "kit/iso-kit.mjs"));
 const { kitScript } = await import(join(SKILL, "scripts/inline-kit.mjs"));
+const { playerHtml, playerScript, PLAYER_CSS } = await import("../../shared/player.mjs");
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const theme = process.argv.includes("--light") ? "light" : "dark";
@@ -363,3 +364,33 @@ const body =
 const out = theme === "light" ? "event-board-light.html" : "event-board.html";
 writeFileSync(join(HERE, out), k.pageHtml({ title: "EventEmitter bell board", theme, body, script: kitScript() + live, width: 720 }));
 console.log("wrote", out);
+
+// ── the same board as a lesson video (shared/player.*) ──────────────────────
+const CHAPTER_TITLES = ["Listeners are chimes", "emit() is synchronous", "once() lets go", "off() needs the same function", "'error' is special"];
+const vname = theme === "light" ? "event-video-light" : "event-video";
+const player = playerHtml({ chapters: CHAPTER_TITLES, mp4: vname + ".mp4" });
+
+const video = readFileSync(join(HERE, "video.js"), "utf8")
+  .replace("__P__", JSON.stringify(P))
+  .replace("__CONST__", JSON.stringify({ SLOTS, ERR_X, HOME }));
+
+const vbody =
+  PLAYER_CSS +
+  k.plateHtml({
+    fig: "Fig 1",
+    title: "EventEmitter · the lesson",
+    hint: "Space plays · ← → seek · 1–5 chapters",
+    readout: "listenerCount('knock') = 0",
+    keys: [
+      { mark: "lit", label: "Hammer: emit() calling listeners, one after another" },
+      { mark: "raised", label: "Chimes: listeners, in the order they were added" },
+      { mark: "flat", label: "Tab clip: a once() listener, dropped after one ring" },
+    ],
+    caption:
+      "Lesson 1 played on the bell board, from 01-events/basics.ts and error-event.ts. Every frame comes from the same small EventEmitter model, so scrubbing rebuilds the board exactly; pause anywhere and the calls below act on the board as it stands.",
+    body: `<div class="iso-stage ee-stage" tabindex="0" role="group" aria-label="Lesson 1 video: EventEmitter on a bell board. Space plays and pauses, arrow keys seek.">${svg}${player}${controls}</div>`,
+  });
+
+const vout = vname + ".html";
+writeFileSync(join(HERE, vout), k.pageHtml({ title: "EventEmitter lesson", theme, body: vbody, script: kitScript() + playerScript() + video, width: 720 }));
+console.log("wrote", vout);

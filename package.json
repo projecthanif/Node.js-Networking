@@ -7,7 +7,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "typecheck": "tsc --noEmit",
     "build": "tsc",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "video:01": "node 01-events/figure/build.mjs && node 01-events/figure/build.mjs --light && node shared/render-video.mjs 01-events/figure/event-video.html && node shared/render-video.mjs 01-events/figure/event-video-light.html",
+    "video:02": "node 02-tcp-server/figure/build.mjs && node 02-tcp-server/figure/build.mjs --light && node shared/render-video.mjs 02-tcp-server/figure/server-video.html && node shared/render-video.mjs 02-tcp-server/figure/server-video-light.html"
   },
   "keywords": [],
   "author": "",
